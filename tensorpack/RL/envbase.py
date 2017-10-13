@@ -75,6 +75,25 @@ class RLEnvironment(object):
                 self.reset_stat()
                 return s if len(s) > 1 else s[0]
 
+    def record_one_episode(self, func):
+        """ Play and record one episode for eval.
+
+        Args:
+            func: the policy function. Takes a state and returns an action.
+        Returns:
+           states, actions, rewards arrays
+        """
+        S, A, R = [], [], []
+        while True:
+            s = self.current_state()
+            act = func(s)
+            r, isOver = self.action(act)
+            S.append(s)
+            A.append(act)
+            R.append(r)
+            # print r
+            if isOver:
+                return np.array(S), np.array(A), np.array(R)
 
 class ActionSpace(object):
 
