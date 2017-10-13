@@ -30,7 +30,7 @@ from tensorpack.utils.gpu import get_nr_gpu
 from tensorpack.RL import *
 from simulator import *
 import common
-from common import (play_model, Evaluator, eval_model_multithread,
+from common import (play_model, save_experience, Evaluator, eval_model_multithread,
                     play_one_episode, play_n_episodes)
 
 if six.PY3:
@@ -59,6 +59,7 @@ ENV_NAME = None
 
 
 def get_player(viz=False, train=False, dumpdir=None):
+    print('Visualize:', viz)
     pl = GymEnv(ENV_NAME, viz=viz, dumpdir=dumpdir)
     pl = MapPlayerState(pl, lambda img: cv2.resize(img, IMAGE_SIZE[::-1]))
     pl = HistoryFramePlayer(pl, FRAME_HISTORY)
@@ -265,7 +266,8 @@ if __name__ == '__main__':
     parser.add_argument('--load', help='load model')
     parser.add_argument('--env', help='env', required=True)
     parser.add_argument('--task', help='task to perform',
-                        choices=['play', 'eval', 'train', 'gen_submit'], default='train')
+                        choices=['play', 'eval', 'train', 'gen_submit',
+                                 'save_experience'], default='train')
     parser.add_argument('--output', help='output directory for submission', default='output_dir')
     parser.add_argument('--episode', help='number of episode to eval', default=100, type=int)
     args = parser.parse_args()
@@ -294,6 +296,12 @@ if __name__ == '__main__':
                 get_player(train=False, dumpdir=args.output),
                 OfflinePredictor(cfg), args.episode)
             # gym.upload(output, api_key='xxx')
+        elif args.task == 'save_experience':
+            print(args.load)
+            if not os.path.exists(args.load):
+                os.mkdir(args.load)
+            import pdb; pdb.set_trace()
+            save_experience(cfg, get_player(viz=False), args.load + '/')
     else:
         dirname = os.path.join('train_log', 'train-atari-{}'.format(ENV_NAME))
         logger.set_logger_dir(dirname)
