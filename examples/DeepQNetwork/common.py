@@ -27,12 +27,38 @@ def play_one_episode(player, func, verbose=False):
         return act
     return np.mean(player.play_one_episode(f))
 
+# copied and modified from the above function
+def record_one_episode(player, func, verbose=False):
+    def f(s):
+        spc = player.get_action_space()
+        act = func([[s]])[0][0].argmax()
+        #if random.random() < 0.001:
+        #    act = spc.sample()
+        if verbose:
+            print(act)
+        return act
+    import pdb; pdb.set_trace()
+    return player.record_one_episode(f)
+
 
 def play_model(cfg, player):
     predfunc = OfflinePredictor(cfg)
     while True:
         score = play_one_episode(player, predfunc)
         print("Total:", score)
+
+def save_experience(cfg, player, path, n_episodes=100):
+    predfunc = OfflinePredictor(cfg)
+    for i in range(n_episodes):
+        S, A, R = record_one_episode(player, predfunc)
+        print("Saving episode %s results" % i)
+        rollout_num = str(i).zfill(np.ceil(np.log10(n_episodes)))
+        fname_state = os.path.join(path, 'episode_%s_state.npy' % rollout_num)
+        fname_action = os.path.join(path, 'episode_%s_action.npy' % rollout_num)
+        fname_reward = os.path.join(path, 'episode_%s_reward.npy' % rollout_num)
+        np.save(fname_state, S)
+        np.save(fname_action, A)
+        np.save(fname_reward, R)
 
 
 def eval_with_funcs(predictors, nr_eval, get_player_fn):
